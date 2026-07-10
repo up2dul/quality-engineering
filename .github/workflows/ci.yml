@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  DB_HOST: localhost
+  DB_PORT: 5432
+  DB_NAME: app_db_test
+  DB_USERNAME: postgres
+  DB_PASSWORD: postgres
+  REDIS_URL: redis://localhost:6379/0
+  SECRET_KEY_BASE: test-secret-key-base-for-ci
+
+jobs:
+  api-tests:
+    name: API Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16.4-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_db_test
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 127.0.0.1:6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3.2'
+          bundler-cache: true
+          working-directory: api
+      
+      - name: Setup database
+        working-directory: api
+        env:
+          RAILS_ENV: test
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+      
+      - name: Run RSpec tests
+        working-directory: api
+        env:
+          RAILS_ENV: test
+        run: bundle exec rspec
+  
+  web-tests:
+    name: Web Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+      
+      - name: Build and type check
+        working-directory: web
+        run: npm run build
+      
+      - name: Run Vitest tests
+        working-directory: web
+        run: npm test -- --run

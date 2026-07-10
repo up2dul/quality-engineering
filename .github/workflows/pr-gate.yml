@@ -1,0 +1,48 @@
+name: PR Gate
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-definition-of-ready:
+    name: Definition of Ready Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR body for required sections
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          echo "Checking PR body for Definition of Ready..."
+          
+          # Check for Spec/PRD Link section
+          if ! echo "$PR_BODY" | grep -qi "spec.*link\|prd.*link\|issue.*link"; then
+            echo "::error::Missing 'Spec / PRD Link' section. Every PR must link to a spec, PRD, or issue."
+            exit 1
+          fi
+          
+          # Check that the link is not just a placeholder
+          if echo "$PR_BODY" | grep -qi "_Link:_\|link:.*_link_\|link:.*todo\|link:.*tbd\|link:.*<.*>\|link:.*placeholder"; then
+            echo "::error::Spec/PRD link appears to be a placeholder. Please provide an actual link."
+            exit 1
+          fi
+          
+          # Check for Acceptance Criteria section
+          if ! echo "$PR_BODY" | grep -qi "acceptance.*criteria"; then
+            echo "::error::Missing 'Acceptance Criteria' section. Every PR must define what 'done' looks like."
+            exit 1
+          fi
+          
+          # Check that acceptance criteria is not empty
+          if echo "$PR_BODY" | grep -qi "acceptance.*criteria.*_criteria\|acceptance.*criteria.*todo"; then
+            echo "::error::Acceptance criteria appears to be a placeholder. Please define actual criteria."
+            exit 1
+          fi
+          
+          # Check for Design Plan section
+          if ! echo "$PR_BODY" | grep -qi "design.*plan\|approach\|implementation"; then
+            echo "::error::Missing 'Design Plan' section. Every PR must document the approach."
+            exit 1
+          fi
+          
+          echo "✓ All Definition of Ready checks passed"

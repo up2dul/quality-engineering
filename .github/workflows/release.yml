@@ -1,0 +1,103 @@
+name: Release Gate
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  DB_HOST: localhost
+  DB_PORT: 5432
+  DB_NAME: app_db_test
+  DB_USERNAME: postgres
+  DB_PASSWORD: postgres
+  REDIS_URL: redis://localhost:6379/0
+  SECRET_KEY_BASE: test-secret-key-base-for-ci
+
+jobs:
+  release-gate:
+    name: Release Gate
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16.4-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_db_test
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 127.0.0.1:6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3.2'
+          bundler-cache: true
+          working-directory: api
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+      
+      - name: Setup database
+        working-directory: api
+        env:
+          RAILS_ENV: test
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+      
+      - name: Run API tests
+        working-directory: api
+        env:
+          RAILS_ENV: test
+        run: bundle exec rspec
+      
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci
+      
+      - name: Build and type check
+        working-directory: web
+        run: npm run build
+      
+      - name: Run web tests
+        working-directory: web
+        run: npm run test:run
+      
+      - name: Release status
+        if: success()
+        run: |
+          echo "✅ RELEASE GATE PASSED"
+          echo "All tests passed. This version is releasable."
+          echo "Tag: ${{ github.ref_name }}"
+      
+      - name: Release blocked
+        if: failure()
+        run: |
+          echo "❌ RELEASE GATE BLOCKED"
+          echo "One or more checks failed. This version is NOT releasable."
+          echo "Tag: ${{ github.ref_name }}"
+          exit 1
