@@ -112,7 +112,7 @@ The URL points to port 3001 (the API), but the interview page lives in the web a
 **Type:** Missing spec  
 **Evidence:** The `ProtectedRoute` component checks for authentication and redirects to `/login` if not authenticated, but there's no reverse check — if you're already authenticated and visit `/login`, you should be redirected to `/assessments`.  
 **Repro:** Log in successfully, then manually navigate to `http://localhost:5173/login`. You'll see the login form instead of being redirected.  
-**Status:** Remaining
+**Status:** ✅ Fixed — LoginPage now checks if user is authenticated and redirects to /assessments if so. See [PR #8](https://github.com/up2dul/quality-engineering/pull/8)
 
 ---
 
@@ -124,7 +124,7 @@ The URL points to port 3001 (the API), but the interview page lives in the web a
 **Type:** Built wrong  
 **Evidence:** Using a JWT with `scheme: 'different-tenant'` returns "Tenant not found. Ensure the JWT scheme claim is valid." — this confirms the tenant does not exist. A more secure response would be a generic 401/403 regardless of whether the tenant exists.  
 **Repro:** Generate a JWT with a non-existent scheme, then hit any authenticated endpoint.  
-**Status:** Remaining
+**Status:** ✅ Fixed — Error message changed to generic "Authentication failed" to avoid leaking tenant existence. See [PR #8](https://github.com/up2dul/quality-engineering/pull/8)
 
 ---
 
