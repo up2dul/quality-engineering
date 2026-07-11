@@ -66,11 +66,7 @@ The URL points to port 3001 (the API), but the interview page lives in the web a
 **Type:** Built wrong  
 **Evidence:** When portfolio generation fails due to rate limiting, `GET /api/v1/sessions/:sessionId/portfolio` returns HTTP 200 with error details in the response body, instead of returning an appropriate error status (503 or 429).  
 **Repro:** Complete an interview, wait for portfolio generation to fail due to rate limiting, then call the portfolio endpoint.  
-**Status:** Remaining
-
----
-
-#### 5. Wrong HTTP status codes for authentication errors
+**Status:** ✅ Fixed — Portfolio endpoint now returns 503 for failed generation, 202 for pending/generating, 200 for complete. See [PR #5](https://github.com/up2dul/quality-engineering/pull/5)
 
 **Impact:** Clients cannot distinguish between "not authenticated" and "forbidden." This breaks standard HTTP error handling — clients that retry on 403 but not on 401 will behave incorrectly.  
 **Type:** Built wrong  
@@ -83,7 +79,7 @@ The URL points to port 3001 (the API), but the interview page lives in the web a
 | Valid token, wrong role | 403 Forbidden    | (not tested yet)       |
 
 **Repro:** `curl http://localhost:3001/api/v1/assessments` (no token) returns 403.  
-**Status:** Remaining
+**Status:** ✅ Fixed — Added `authenticate!` before_action that validates tokens before tenant resolution. Returns 401 for missing/invalid tokens, 403 for insufficient permissions. See [PR #6](https://github.com/up2dul/quality-engineering/pull/6)
 
 ---
 
