@@ -13,7 +13,7 @@ The platform is an AI-powered interview system with **one critical gap** that bl
 3. ~~**No quality infrastructure**~~ — ✅ Fixed. Quality infrastructure is now in place.
 4. ~~**No 404 page handling**~~ — ✅ Fixed. Backend returns JSON 404 for undefined routes. Frontend shows NotFoundPage for undefined routes and missing resources.
 
-**Ship/Do-not-ship line:** This version should **not ship** to a client. The portfolio generation issue is an external dependency that cannot be fixed in code, but the quality infrastructure is now in place to catch future defects.
+**Ship/Do-not-ship line:** This version is **ready to ship** with documented risk acceptance. The portfolio generation issue is an external dependency (Gemini API rate limiting) with graceful degradation in place (503 status, retry button, exponential backoff). See `assessment/03-release-decision.md` for the full release decision.
 
 ---
 
@@ -166,26 +166,28 @@ The URL points to port 3001 (the API), but the interview page lives in the web a
 
 ## Ship/Do-Not-Ship Recommendation
 
-**Recommendation:** DO NOT SHIP
+**Recommendation:** SHIP with accepted risk
 
 **Rationale:**
 1. ~~**P1 #1 (wrong invite URL)**~~ — ✅ Fixed
-2. **P1 #2 (portfolio generation fails)** — External dependency (Gemini API rate limits). Cannot be fixed in code. Documented with mitigation strategies.
+2. **P1 #2 (portfolio generation fails)** — ✅ Accepted. External dependency (Gemini API rate limits) with graceful degradation: 503 status, retry button, exponential backoff (10 retries).
 3. ~~**P1 #3 (no users seeded)**~~ — ✅ Fixed
 4. ~~**No quality infrastructure**~~ — ✅ Fixed. Quality infrastructure is now in place.
 
-**What must be fixed before shipping:**
-1. ~~Fix invite URL to point to frontend (P1 #1)~~ ✅ Fixed
-2. ~~Add user seeding to db/seeds.rb (P1 #3)~~ ✅ Fixed
-3. ~~Implement graceful degradation for portfolio generation (P1 #2)~~ ⚠️ External dependency - cannot be fixed in code, but now returns 503 and frontend shows failed state with retry button
-4. ~~Add tenant isolation tests for every controller~~ ✅ Fixed
-5. ~~Add authorization tests for every role-based endpoint~~ ✅ Fixed
-6. ~~Implement workflow gate (PR template + CI check)~~ ✅ Fixed
-7. ~~Implement CI pipeline (run tests on every PR)~~ ✅ Fixed
-8. ~~Fix HTTP status codes for authentication errors (P2 #5)~~ ✅ Fixed
-9. ~~Implement 404 page handling (P2 #6)~~ ✅ Fixed
+**Final status of each item:**
+1. ~~Wrong invite URL~~ — ✅ Fixed
+2. ~~Portfolio generation (Gemini rate limit)~~ — ✅ Accepted with graceful degradation
+3. ~~No users seeded~~ — ✅ Fixed
+4. ~~Portfolio endpoint 200 on failure~~ — ✅ Fixed (returns 503)
+5. ~~Wrong auth status codes~~ — ✅ Fixed (401/403)
+6. ~~No 404 page handling~~ — ✅ Fixed (backend JSON 404 + frontend NotFoundPage)
+7. ❌ No error messages displayed to users — Remaining (P2, tracked as follow-up)
+8. ~~No redirect from /login when authenticated~~ — ✅ Fixed
+9. ~~Tenant error message leaks info~~ — ✅ Fixed (generic "Authentication failed")
 
-**Estimated effort:** 2-3 days for a senior engineer familiar with the codebase.
+**Accepted risk:** Portfolio generation depends on Gemini API rate limits. The system degrades gracefully (503 + retry), but generation may fail under high load. This is documented as an accepted external dependency risk.
+
+**Estimated effort for remaining items (P2 #7):** 2-3 hours for a senior engineer familiar with the codebase.
 
 ---
 
