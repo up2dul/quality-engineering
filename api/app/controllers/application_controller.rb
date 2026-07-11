@@ -4,6 +4,7 @@ class ApplicationController < ActionController::API
   include Response
   include ExceptionHandler
 
+  before_action :authenticate!, if: :authorization_header_present?
   before_action :require_tenant!
 
   # Declarative auth helper — mirrors rakamin-api's authorize_auth_token! pattern.
@@ -16,6 +17,20 @@ class ApplicationController < ActionController::API
   end
 
   private
+
+  # ── Auth ────────────────────────────────────────────────────────────────────
+
+  def authorization_header_present?
+    request.headers['Authorization'].present?
+  end
+
+  def authenticate!
+    # Validate the token and set Current.user
+    # This will raise MissingToken or InvalidToken if the token is bad
+    AuthorizeApiRequest.new(request.headers, []).call
+  rescue ExceptionHandler::MissingToken, ExceptionHandler::InvalidToken => e
+    raise ExceptionHandler::InvalidToken, e.message
+  end
 
   # ── Tenant ──────────────────────────────────────────────────────────────────
 
