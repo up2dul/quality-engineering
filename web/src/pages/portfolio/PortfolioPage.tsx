@@ -11,6 +11,7 @@ import { portfoliosApi } from "@/services/portfolios";
 import { usePolling } from "@/hooks/usePolling";
 import { ArrowLeft, Download, Loader2, RefreshCw, Zap, FileText } from "lucide-react";
 import type { Portfolio, AssessorOverride, Vacancy } from "@/types";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 export default function PortfolioPage() {
   const { id, sessionId } = useParams<{ id: string; sessionId: string }>();
@@ -23,6 +24,7 @@ export default function PortfolioPage() {
   const [selectedVacancy, setSelectedVacancy] = useState<string>("");
   const [exporting, setExporting] = useState<"pdf" | "json" | null>(null);
   const [candidateName, setCandidateName] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
   const fetchPortfolio = useCallback(async () => {
     const res = await sessionsApi.getPortfolio(Number(sessionId));
@@ -47,7 +49,11 @@ export default function PortfolioPage() {
         setVacancies(vRes.data.vacancies);
         setCandidateName(sRes.data.session.candidate_name ?? null);
       })
-      .catch(() => {})
+      .catch((err) => {
+        if (err.response?.status === 404) {
+          setNotFound(true);
+        }
+      })
       .finally(() => setLoading(false));
   }, [fetchPortfolio, sessionId]);
 
@@ -102,6 +108,10 @@ export default function PortfolioPage() {
         <Skeleton className="h-48 w-full" />
       </div>
     );
+  }
+
+  if (notFound) {
+    return <NotFoundPage />;
   }
 
   return (

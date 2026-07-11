@@ -16,6 +16,10 @@ class ApplicationController < ActionController::API
     before_action(options) { authenticate_with_roles!(roles) }
   end
 
+  def route_not_found
+    render json: { errors: [{ status: 404, message: 'Route not found' }] }, status: :not_found
+  end
+
   private
 
   # ── Auth ────────────────────────────────────────────────────────────────────
