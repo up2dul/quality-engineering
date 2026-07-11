@@ -6,7 +6,7 @@ RSpec.describe 'Portfolio endpoint status codes' do
   let(:tenant) { create(:organization) }
   let(:user) { create(:user, role: 'admin') }
   let(:token) { build_jwt(user_id: user.id, role: 'admin', scheme: tenant.scheme) }
-  let(:assessment) { create(:assessment, tenant_id: tenant.id, created_by: user) }
+  let(:assessment) { create(:assessment, tenant_id: tenant.id, created_by: user.id) }
   let(:session) { create(:session, assessment: assessment, tenant_id: tenant.id) }
 
   before do
