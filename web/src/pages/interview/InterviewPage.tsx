@@ -23,6 +23,7 @@ import { sessionsApi } from "@/services/sessions";
 import HardwareCheck from "@/components/HardwareCheck";
 import { CheckCircle, Mic, MicOff } from "lucide-react";
 import type { CandidateInfo, InterviewState, InterviewSpeaker, TranscriptTurn } from "@/types";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 export default function InterviewPage() {
   const { token } = useParams<{ token: string }>();
@@ -38,6 +39,7 @@ export default function InterviewPage() {
   const connectionLostTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [micMuted, setMicMuted] = useState(false);
   const micMutedRef = useRef(false);
+  const [notFound, setNotFound] = useState(false);
 
   // Fetch candidate info
   useEffect(() => {
@@ -48,7 +50,13 @@ export default function InterviewPage() {
         setSessionId(res.data.session_id);
         if (res.data.session_status === "ended") setInterviewState("complete");
       })
-      .catch(() => setInterviewState("complete"));
+      .catch((err) => {
+        if (err.response?.status === 404) {
+          setNotFound(true);
+        } else {
+          setInterviewState("complete");
+        }
+      });
   }, [token]);
 
   const muteRef = useRef<(() => void) | null>(null);
@@ -186,6 +194,11 @@ export default function InterviewPage() {
       : connectionState === "connected"
       ? "connected"
       : "reconnecting";
+
+  // ── Not Found ──────────────────────────────────────────────────────────
+  if (notFound) {
+    return <NotFoundPage />;
+  }
 
   // ── State A: Pre-start ──────────────────────────────────────────────────
   if (interviewState === "idle") {
