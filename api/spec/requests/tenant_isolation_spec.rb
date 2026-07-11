@@ -11,8 +11,8 @@ RSpec.describe 'Tenant Isolation' do
   let(:token_b) { build_jwt(user_id: user_b.id, role: 'admin', scheme: tenant_b.scheme) }
 
   describe 'Assessments' do
-    let!(:assessment_a) { create(:assessment, tenant: tenant_a, created_by: user_a, name: 'Assessment A') }
-    let!(:assessment_b) { create(:assessment, tenant: tenant_b, created_by: user_b, name: 'Assessment B') }
+    let!(:assessment_a) { create(:assessment, tenant_id: tenant_a.id, created_by: user_a.id, name: 'Assessment A') }
+    let!(:assessment_b) { create(:assessment, tenant_id: tenant_b.id, created_by: user_b.id, name: 'Assessment B') }
 
     it 'tenant A cannot see tenant B assessments' do
       get '/api/v1/assessments', headers: auth_headers(token_a)
@@ -45,8 +45,8 @@ RSpec.describe 'Tenant Isolation' do
   end
 
   describe 'Sessions' do
-    let!(:assessment_a) { create(:assessment, tenant: tenant_a, created_by: user_a) }
-    let!(:assessment_b) { create(:assessment, tenant: tenant_b, created_by: user_b) }
+    let!(:assessment_a) { create(:assessment, tenant_id: tenant_a.id, created_by: user_a.id) }
+    let!(:assessment_b) { create(:assessment, tenant_id: tenant_b.id, created_by: user_b.id) }
     let!(:session_a) { create(:session, assessment: assessment_a, tenant_id: tenant_a.id) }
     let!(:session_b) { create(:session, assessment: assessment_b, tenant_id: tenant_b.id) }
 
@@ -66,7 +66,7 @@ RSpec.describe 'Tenant Isolation' do
     end
 
     it 'tenant A cannot end tenant B session' do
-      post "/api/v1/sessions/#{session_b.id}/end",
+      post "/api/v1/sessions/#{session_b.id}/end_session",
            params: { session: { reason: 'manual_assessor' } }.to_json,
            headers: auth_headers(token_a)
 
@@ -75,8 +75,8 @@ RSpec.describe 'Tenant Isolation' do
   end
 
   describe 'Vacancies' do
-    let!(:vacancy_a) { create(:vacancy, tenant: tenant_a, created_by: user_a, role_title: 'Vacancy A') }
-    let!(:vacancy_b) { create(:vacancy, tenant: tenant_b, created_by: user_b, role_title: 'Vacancy B') }
+    let!(:vacancy_a) { create(:vacancy, tenant_id: tenant_a.id, created_by: user_a.id, role_title: 'Vacancy A') }
+    let!(:vacancy_b) { create(:vacancy, tenant_id: tenant_b.id, created_by: user_b.id, role_title: 'Vacancy B') }
 
     it 'tenant A cannot see tenant B vacancies' do
       get '/api/v1/vacancies', headers: auth_headers(token_a)
@@ -109,8 +109,8 @@ RSpec.describe 'Tenant Isolation' do
   end
 
   describe 'Portfolios' do
-    let!(:assessment_a) { create(:assessment, tenant: tenant_a, created_by: user_a) }
-    let!(:assessment_b) { create(:assessment, tenant: tenant_b, created_by: user_b) }
+    let!(:assessment_a) { create(:assessment, tenant_id: tenant_a.id, created_by: user_a.id) }
+    let!(:assessment_b) { create(:assessment, tenant_id: tenant_b.id, created_by: user_b.id) }
     let!(:session_a) { create(:session, assessment: assessment_a, tenant_id: tenant_a.id) }
     let!(:session_b) { create(:session, assessment: assessment_b, tenant_id: tenant_b.id) }
     let!(:portfolio_a) { create(:portfolio, session: session_a, generation_status: 'complete') }

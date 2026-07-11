@@ -15,7 +15,7 @@ RSpec.describe 'Authorization' do
   end
 
   describe 'Assessments (require :assessor role)' do
-    let!(:assessment) { create(:assessment, tenant: tenant, created_by: admin_user) }
+    let!(:assessment) { create(:assessment, tenant_id: tenant.id, created_by: admin_user.id) }
 
     it 'allows admin to access assessments' do
       get '/api/v1/assessments', headers: auth_headers(admin_token)
@@ -39,7 +39,7 @@ RSpec.describe 'Authorization' do
   end
 
   describe 'Vacancies (require :assessor role)' do
-    let!(:vacancy) { create(:vacancy, tenant: tenant, created_by: admin_user) }
+    let!(:vacancy) { create(:vacancy, tenant_id: tenant.id, created_by: admin_user.id) }
 
     it 'allows admin to access vacancies' do
       get '/api/v1/vacancies', headers: auth_headers(admin_token)
@@ -53,7 +53,7 @@ RSpec.describe 'Authorization' do
   end
 
   describe 'Sessions (require :assessor role except candidate endpoints)' do
-    let!(:assessment) { create(:assessment, tenant: tenant, created_by: admin_user) }
+    let!(:assessment) { create(:assessment, tenant_id: tenant.id, created_by: admin_user.id) }
     let!(:session) { create(:session, assessment: assessment, tenant_id: tenant.id) }
 
     it 'allows admin to list sessions' do
@@ -67,7 +67,7 @@ RSpec.describe 'Authorization' do
     end
 
     it 'allows admin to end session' do
-      post "/api/v1/sessions/#{session.id}/end",
+      post "/api/v1/sessions/#{session.id}/end_session",
            params: { session: { reason: 'manual_assessor' } }.to_json,
            headers: auth_headers(admin_token)
       expect(response).to have_http_status(:ok)
@@ -92,7 +92,7 @@ RSpec.describe 'Authorization' do
   end
 
   describe 'Portfolios (require :assessor role)' do
-    let!(:assessment) { create(:assessment, tenant: tenant, created_by: admin_user) }
+    let!(:assessment) { create(:assessment, tenant_id: tenant.id, created_by: admin_user.id) }
     let!(:session) { create(:session, assessment: assessment, tenant_id: tenant.id) }
     let!(:portfolio) { create(:portfolio, session: session, generation_status: 'complete') }
 

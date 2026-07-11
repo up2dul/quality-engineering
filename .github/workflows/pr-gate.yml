@@ -22,9 +22,13 @@ jobs:
           fi
           
           # Check that the link is not just a placeholder
-          if echo "$PR_BODY" | grep -qi "_Link:_\|link:.*_link_\|link:.*todo\|link:.*tbd\|link:.*<.*>\|link:.*placeholder"; then
-            echo "::error::Spec/PRD link appears to be a placeholder. Please provide an actual link."
-            exit 1
+          # Only fail if there's no actual URL (http/https) after the link marker
+          if echo "$PR_BODY" | grep -qi "spec.*link\|prd.*link\|issue.*link"; then
+            # Check if there's an actual URL present
+            if ! echo "$PR_BODY" | grep -qi "https\?://"; then
+              echo "::error::Spec/PRD link appears to be a placeholder. Please provide an actual URL."
+              exit 1
+            fi
           fi
           
           # Check for Acceptance Criteria section

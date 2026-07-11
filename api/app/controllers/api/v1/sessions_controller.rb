@@ -4,6 +4,7 @@ module Api
   module V1
     class SessionsController < ApiController
       authorize_auth_token! :assessor, except: %i[candidate_info audio_complete]
+      skip_before_action :authenticate!, only: %i[candidate_info audio_complete]
       skip_before_action :require_tenant!, only: %i[candidate_info audio_complete]
 
       before_action :set_session, only: %i[show end_session coverage transcript]

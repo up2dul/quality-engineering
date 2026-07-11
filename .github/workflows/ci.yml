@@ -3,8 +3,14 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'assessment/**'
+      - '*.md'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'assessment/**'
+      - '*.md'
 
 env:
   DB_HOST: localhost
@@ -14,6 +20,7 @@ env:
   DB_PASSWORD: postgres
   REDIS_URL: redis://localhost:6379/0
   SECRET_KEY_BASE: test-secret-key-base-for-ci
+  ALLOWED_ORIGINS: http://localhost:5173
 
 jobs:
   api-tests:
@@ -55,12 +62,17 @@ jobs:
           bundler-cache: true
           working-directory: api
       
+      - name: Create application.yml for Figaro
+        working-directory: api
+        run: cp config/application.yml.sample config/application.yml
+
       - name: Setup database
         working-directory: api
         env:
           RAILS_ENV: test
         run: |
           bundle exec rails db:create
+          bundle exec rails runner 'ActiveRecord::Base.connection.execute("CREATE SCHEMA IF NOT EXISTS ai_interview")'
           bundle exec rails db:schema:load
       
       - name: Run RSpec tests

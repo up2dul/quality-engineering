@@ -17,6 +17,7 @@ import { assessmentsApi } from "@/services/assessments";
 import { LEVEL_LABELS } from "@/utils/constants";
 import { ArrowLeft, Copy, Check, Eye, Pencil, Clock, Plus, UserRound } from "lucide-react";
 import type { Assessment, Session } from "@/types";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 function SessionRow({
   session,
@@ -132,6 +133,7 @@ export default function AssessmentInvitePage() {
   const [newSessionCopied, setNewSessionCopied] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [candidateNameInput, setCandidateNameInput] = useState("");
+  const [notFound, setNotFound] = useState(false);
 
   const loadSessions = useCallback(async () => {
     const res = await assessmentsApi.getSessions(Number(id));
@@ -145,7 +147,11 @@ export default function AssessmentInvitePage() {
     ]).then(([aRes, sRes]) => {
       setAssessment(aRes.data.assessment);
       setSessions(sRes.data.sessions);
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch((err) => {
+      if (err.response?.status === 404) {
+        setNotFound(true);
+      }
+    }).finally(() => setLoading(false));
   }, [id]);
 
   // Poll while any session is live or pending
@@ -196,6 +202,10 @@ export default function AssessmentInvitePage() {
         <Skeleton className="h-48 w-full" />
       </div>
     );
+  }
+
+  if (notFound) {
+    return <NotFoundPage />;
   }
 
   return (
