@@ -77,6 +77,34 @@ else
   puts "  Created organization: id=#{result['id']} scheme=#{result['scheme']}"
 end
 
+# ── Users ─────────────────────────────────────────────────────────────────────
+#
+# Create test users for authentication.
+# These users can be used to mint JWTs for testing the API.
+
+puts ""
+puts "== Seeding test users =="
+
+admin_user = User.find_or_initialize_by(email: 'admin@test.com')
+if admin_user.new_record?
+  admin_user.password = 'password123'
+  admin_user.role = 'admin'
+  admin_user.save!
+  puts "  Created admin user: #{admin_user.email} (id: #{admin_user.id})"
+else
+  puts "  Admin user already exists: #{admin_user.email} (skipped)"
+end
+
+regular_user = User.find_or_initialize_by(email: 'user@test.com')
+if regular_user.new_record?
+  regular_user.password = 'password123'
+  regular_user.role = 'user'
+  regular_user.save!
+  puts "  Created regular user: #{regular_user.email} (id: #{regular_user.id})"
+else
+  puts "  Regular user already exists: #{regular_user.email} (skipped)"
+end
+
 # ── B7 Skill Taxonomy (22 pilot skills) ──────────────────────────────────────
 
 B7_SKILLS = [
@@ -382,18 +410,22 @@ puts "Your test organization:"
 puts "  id     : #{org['id']}"
 puts "  scheme : #{org['scheme']}"
 puts ""
+puts "Your test users:"
+puts "  admin  : admin@test.com / password123 (id: #{admin_user.id})"
+puts "  user   : user@test.com / password123 (id: #{regular_user.id})"
+puts ""
 puts "To mint a JWT for testing, open the Rails console:"
 puts ""
 puts "  bundle exec rails console"
 puts ""
 puts "Then run:"
 puts ""
-puts "  # Assessor / admin token (can create assessments, view sessions, etc.)"
-puts "  token = JsonWebToken.encode({ user_id: 1, role: 'admin', scheme: '#{TEST_ORG[:scheme]}' })"
+puts "  # Admin token (can create assessments, view sessions, etc.)"
+puts "  token = JsonWebToken.encode({ user_id: #{admin_user.id}, role: 'admin', scheme: '#{TEST_ORG[:scheme]}' })"
 puts "  puts token"
 puts ""
-puts "  # Candidate token (used in WebSocket ?token= param)"
-puts "  token = JsonWebToken.encode({ user_id: 2, role: 'student', scheme: '#{TEST_ORG[:scheme]}' })"
+puts "  # Regular user token (limited permissions)"
+puts "  token = JsonWebToken.encode({ user_id: #{regular_user.id}, role: 'user', scheme: '#{TEST_ORG[:scheme]}' })"
 puts "  puts token"
 puts ""
 puts "Then hit the API:"
