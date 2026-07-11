@@ -28,7 +28,7 @@ RSpec.describe 'Session State Machine' do
       let!(:session) { create(:session, assessment: assessment, tenant_id: tenant.id, status: 'pending') }
 
       it 'can end a pending session' do
-        post "/api/v1/sessions/#{session.id}/end",
+        post "/api/v1/sessions/#{session.id}/end_session",
              params: { session: { reason: 'manual_assessor' } }.to_json,
              headers: auth_headers(token)
 
@@ -41,7 +41,7 @@ RSpec.describe 'Session State Machine' do
       let!(:session) { create(:session, assessment: assessment, tenant_id: tenant.id, status: 'active', started_at: Time.current) }
 
       it 'can end an active session' do
-        post "/api/v1/sessions/#{session.id}/end",
+        post "/api/v1/sessions/#{session.id}/end_session",
              params: { session: { reason: 'manual_assessor' } }.to_json,
              headers: auth_headers(token)
 
@@ -54,7 +54,7 @@ RSpec.describe 'Session State Machine' do
       let!(:session) { create(:session, assessment: assessment, tenant_id: tenant.id, status: 'ended', ended_at: Time.current) }
 
       it 'cannot end an already ended session' do
-        post "/api/v1/sessions/#{session.id}/end",
+        post "/api/v1/sessions/#{session.id}/end_session",
              params: { session: { reason: 'manual_assessor' } }.to_json,
              headers: auth_headers(token)
 
@@ -67,7 +67,7 @@ RSpec.describe 'Session State Machine' do
       let!(:session) { create(:session, assessment: assessment, tenant_id: tenant.id, status: 'failed') }
 
       it 'can end a failed session' do
-        post "/api/v1/sessions/#{session.id}/end",
+        post "/api/v1/sessions/#{session.id}/end_session",
              params: { session: { reason: 'error' } }.to_json,
              headers: auth_headers(token)
 
@@ -80,7 +80,7 @@ RSpec.describe 'Session State Machine' do
       let!(:session) { create(:session, assessment: assessment, tenant_id: tenant.id, status: 'active') }
 
       it 'rejects invalid end reason' do
-        post "/api/v1/sessions/#{session.id}/end",
+        post "/api/v1/sessions/#{session.id}/end_session",
              params: { session: { reason: 'invalid_reason' } }.to_json,
              headers: auth_headers(token)
 

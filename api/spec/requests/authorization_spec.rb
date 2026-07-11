@@ -67,7 +67,7 @@ RSpec.describe 'Authorization' do
     end
 
     it 'allows admin to end session' do
-      post "/api/v1/sessions/#{session.id}/end",
+      post "/api/v1/sessions/#{session.id}/end_session",
            params: { session: { reason: 'manual_assessor' } }.to_json,
            headers: auth_headers(admin_token)
       expect(response).to have_http_status(:ok)
