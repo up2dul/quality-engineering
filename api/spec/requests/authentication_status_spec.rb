@@ -62,7 +62,7 @@ RSpec.describe 'Authentication status codes' do
   end
 
   describe 'candidate endpoints (no JWT required)' do
-    let!(:assessment) { create(:assessment, tenant: tenant, created_by: user) }
+    let!(:assessment) { create(:assessment, tenant_id: tenant.id, created_by: user) }
     let!(:session) { create(:session, assessment: assessment, tenant_id: tenant.id) }
 
     it 'allows access to candidate_info with valid invite token' do

@@ -16,7 +16,7 @@ FactoryBot.define do
   end
 
   factory :assessment do
-    association :tenant, factory: :organization
+    tenant_id { association(:organization).id }
     association :created_by, factory: :user
     name { 'Test Assessment' }
     time_limit_min { 30 }
@@ -43,7 +43,7 @@ FactoryBot.define do
   end
 
   factory :vacancy do
-    association :tenant, factory: :organization
+    tenant_id { association(:organization).id }
     association :created_by, factory: :user
     role_title { 'Software Engineer' }
   end

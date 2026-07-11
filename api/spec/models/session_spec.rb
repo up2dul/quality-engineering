@@ -6,7 +6,7 @@ RSpec.describe Session do
   describe '#invite_url' do
     let(:tenant) { create(:organization) }
     let(:user) { create(:user) }
-    let(:assessment) { create(:assessment, tenant: tenant, created_by: user) }
+    let(:assessment) { create(:assessment, tenant_id: tenant.id, created_by: user) }
     let(:session) { create(:session, assessment: assessment, tenant_id: tenant.id) }
 
     context 'when FRONTEND_URL is set' do
