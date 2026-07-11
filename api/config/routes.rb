@@ -65,4 +65,7 @@ Rails.application.routes.draw do
       }
     end
   end
+
+  # Root-level catch-all for any unmatched routes (e.g., /interview/:token)
+  match '*unmatched', to: 'application#route_not_found', via: :all
 end
