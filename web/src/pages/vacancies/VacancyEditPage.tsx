@@ -12,6 +12,7 @@ import SkillPicker from "@/components/assessment/SkillPicker";
 import { vacanciesApi } from "@/services/vacancies";
 import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
 import type { VacancySkill } from "@/types";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 interface VacancyFormValues {
   role_title: string;
@@ -26,6 +27,7 @@ export default function VacancyEditPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
   const { register, handleSubmit, control, setValue, watch, reset } = useForm<VacancyFormValues>({
     defaultValues: { role_title: "", culture_dimensions: "", competency_expectations: "", skills: [] },
@@ -36,7 +38,11 @@ export default function VacancyEditPage() {
     vacanciesApi.get(Number(id)).then((res) => {
       const v = res.data.vacancy;
       reset({ role_title: v.role_title, culture_dimensions: v.culture_dimensions, competency_expectations: v.competency_expectations, skills: v.skills });
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch((err) => {
+      if (err.response?.status === 404) {
+        setNotFound(true);
+      }
+    }).finally(() => setLoading(false));
   }, [id, reset]);
 
   const onSubmit = async (data: VacancyFormValues) => {
@@ -55,6 +61,7 @@ export default function VacancyEditPage() {
   };
 
   if (loading) return <div className="max-w-2xl mx-auto space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-10 w-full" /></div>;
+  if (notFound) return <NotFoundPage />;
 
   return (
     <div className="max-w-2xl mx-auto">

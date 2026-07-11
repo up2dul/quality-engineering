@@ -4,6 +4,7 @@ class ApplicationController < ActionController::API
   include Response
   include ExceptionHandler
 
+  before_action :authenticate!, if: :authorization_header_present?
   before_action :require_tenant!
 
   # Declarative auth helper — mirrors rakamin-api's authorize_auth_token! pattern.
@@ -15,7 +16,25 @@ class ApplicationController < ActionController::API
     before_action(options) { authenticate_with_roles!(roles) }
   end
 
+  def route_not_found
+    render json: { errors: [{ status: 404, message: 'Route not found' }] }, status: :not_found
+  end
+
   private
+
+  # ── Auth ────────────────────────────────────────────────────────────────────
+
+  def authorization_header_present?
+    request.headers['Authorization'].present?
+  end
+
+  def authenticate!
+    # Validate the token and set Current.user
+    # This will raise MissingToken or InvalidToken if the token is bad
+    AuthorizeApiRequest.new(request.headers, []).call
+  rescue ExceptionHandler::MissingToken, ExceptionHandler::InvalidToken => e
+    raise ExceptionHandler::InvalidToken, e.message
+  end
 
   # ── Tenant ──────────────────────────────────────────────────────────────────
 
