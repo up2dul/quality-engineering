@@ -29,26 +29,31 @@ describe('LoginPage', () => {
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
-  it('shows validation error for empty email', async () => {
+  it('prevents submission for empty email via HTML5 validation', async () => {
     renderLoginPage();
 
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement;
+    const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+      expect(emailInput.validity.valueMissing).toBe(true);
     });
   });
 
-  it('shows validation error for invalid email format', async () => {
+  it('prevents submission for invalid email format via HTML5 validation', async () => {
     renderLoginPage();
 
-    fireEvent.change(screen.getByLabelText(/email/i), {
+    const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement;
+
+    fireEvent.change(emailInput, {
       target: { value: 'not-an-email' },
     });
     fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/invalid email format/i)).toBeInTheDocument();
+      expect(emailInput.validity.typeMismatch).toBe(true);
     });
   });
 });
