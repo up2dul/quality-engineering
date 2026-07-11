@@ -4,8 +4,10 @@ class ApplicationController < ActionController::API
   include Response
   include ExceptionHandler
 
-  before_action :authenticate!, if: :authorization_header_present?
+  before_action :authenticate!
   before_action :require_tenant!
+  skip_before_action :authenticate!, only: :route_not_found
+  skip_before_action :require_tenant!, only: :route_not_found
 
   # Declarative auth helper — mirrors rakamin-api's authorize_auth_token! pattern.
   # Usage:

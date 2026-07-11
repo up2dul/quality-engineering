@@ -59,7 +59,7 @@ RSpec.describe 'Session State Machine' do
              headers: auth_headers(token)
 
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_response[:error]).to include('already ended')
+        expect(json_response[:errors][0][:message]).to include('already ended')
       end
     end
 
@@ -85,7 +85,7 @@ RSpec.describe 'Session State Machine' do
              headers: auth_headers(token)
 
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_response[:error]).to include('Invalid end reason')
+        expect(json_response[:errors][0][:message]).to include('Invalid end reason')
       end
     end
   end
