@@ -66,7 +66,7 @@ RSpec.describe 'Tenant Isolation' do
     end
 
     it 'tenant A cannot end tenant B session' do
-      post "/api/v1/sessions/#{session_b.id}/end",
+      post "/api/v1/sessions/#{session_b.id}/end_session",
            params: { session: { reason: 'manual_assessor' } }.to_json,
            headers: auth_headers(token_a)
 
