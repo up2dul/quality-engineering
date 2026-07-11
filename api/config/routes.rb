@@ -59,6 +59,13 @@ Rails.application.routes.draw do
           get  :export
         end
       end
+
+      match '*unmatched', to: 'application#route_not_found', via: :all, constraints: lambda { |req|
+        req.path.start_with?('/api/')
+      }
     end
   end
+
+  # Root-level catch-all for any unmatched routes (e.g., /interview/:token)
+  match '*unmatched', to: 'application#route_not_found', via: :all
 end

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSetAtom } from "jotai";
+import { useNavigate, Navigate } from "react-router-dom";
+import { useAtomValue, useSetAtom } from "jotai";
 import { authAtom, saveToken } from "@/stores/authAtom";
 import { authApi } from "@/services/auth";
 import { Button } from "@/components/ui/button";
@@ -10,11 +10,14 @@ import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { token } = useAtomValue(authAtom);
   const setAuth = useSetAtom(authAtom);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (token) return <Navigate to="/assessments" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

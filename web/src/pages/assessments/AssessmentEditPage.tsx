@@ -28,6 +28,7 @@ import { assessmentsApi } from "@/services/assessments";
 import { TIME_LIMIT_OPTIONS } from "@/utils/constants";
 import type { AssessmentSkill } from "@/types";
 import type { AssessmentFormValues } from "./AssessmentNewPage";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 export default function AssessmentEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +37,7 @@ export default function AssessmentEditPage() {
   const [submitting, setSubmitting] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
   const form = useForm<AssessmentFormValues>({
     defaultValues: { name: "", time_limit_min: 45, skills: [] },
@@ -51,7 +53,11 @@ export default function AssessmentEditPage() {
         const a = res.data.assessment;
         reset({ name: a.name, time_limit_min: a.time_limit_min, skills: a.skills });
       })
-      .catch(() => {})
+      .catch((err) => {
+        if (err.response?.status === 404) {
+          setNotFound(true);
+        }
+      })
       .finally(() => setLoading(false));
   }, [id, reset]);
 
@@ -96,6 +102,10 @@ export default function AssessmentEditPage() {
         <Skeleton className="h-24 w-full" />
       </div>
     );
+  }
+
+  if (notFound) {
+    return <NotFoundPage />;
   }
 
   return (

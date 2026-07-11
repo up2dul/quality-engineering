@@ -23,7 +23,7 @@ class Message
   end
 
   def self.tenant_not_found
-    'Tenant not found. Ensure the JWT scheme claim is valid.'
+    'Authentication failed'
   end
 
   def self.assessment_error
