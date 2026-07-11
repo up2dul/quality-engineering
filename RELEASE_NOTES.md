@@ -45,6 +45,8 @@ This release establishes the quality infrastructure that was missing from the in
 | No workflow gates | P1 | ✅ Fixed | PR template + gate created |
 | No tenant isolation validation | P1 | ✅ Fixed | 15 test cases written |
 | No state machine validation | P1 | ✅ Fixed | 10 test cases written |
+| Invite URL points to backend | P1 | ✅ Fixed | Added FRONTEND_URL env var |
+| No users seeded | P1 | ✅ Fixed | Added user creation to seeds |
 | Tenant isolation bypass | P1 | ❌ Remaining | Known security gap |
 
 ---

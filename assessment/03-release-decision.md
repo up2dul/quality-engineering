@@ -87,6 +87,8 @@
 | 4 | Tenant isolation bypass | ❌ Remaining | Code not changed; tests written to validate |
 | 5 | No tenant isolation validation | ✅ Fixed | 15 test cases written |
 | 6 | No state machine validation | ✅ Fixed | 10 test cases written |
+| 7 | Invite URL points to backend | ✅ Fixed | Added FRONTEND_URL env var and updated Session model |
+| 8 | No users seeded | ✅ Fixed | Added admin and regular user creation to db/seeds.rb |
 
 **Critical remaining issue:**
 
@@ -114,6 +116,8 @@
 - ✅ Tenant isolation tests written
 - ✅ Authorization tests written
 - ✅ State machine tests written
+- ✅ Invite URL now points to frontend (FRONTEND_URL)
+- ✅ Database seeding creates test users (admin and regular user)
 
 ### Failing checks
 

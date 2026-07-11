@@ -207,6 +207,8 @@ The initial audit found 6 P1 issues:
 - Tenant isolation is validated by automated tests
 - Authorization is validated by automated tests
 - Session state machine is validated by automated tests
+- **FIXED**: Invite URL now points to frontend (FRONTEND_URL) instead of backend
+- **FIXED**: Database seeding now creates test users (admin@test.com, user@test.com)
 
 ### What remains
 
