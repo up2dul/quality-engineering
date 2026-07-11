@@ -14,6 +14,7 @@ env:
   DB_PASSWORD: postgres
   REDIS_URL: redis://localhost:6379/0
   SECRET_KEY_BASE: test-secret-key-base-for-ci
+  ALLOWED_ORIGINS: http://localhost:5173
 
 jobs:
   api-tests:
