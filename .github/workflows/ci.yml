@@ -56,12 +56,17 @@ jobs:
           bundler-cache: true
           working-directory: api
       
+      - name: Create application.yml for Figaro
+        working-directory: api
+        run: cp config/application.yml.sample config/application.yml
+
       - name: Setup database
         working-directory: api
         env:
           RAILS_ENV: test
         run: |
           bundle exec rails db:create
+          bundle exec rails runner 'ActiveRecord::Base.connection.execute("CREATE SCHEMA IF NOT EXISTS ai_interview")'
           bundle exec rails db:schema:load
       
       - name: Run RSpec tests
