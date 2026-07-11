@@ -2,8 +2,9 @@
 
 module Api
   module V1
-    class AuthenticationController < ApiController
-      skip_before_action :require_tenant!
+      class AuthenticationController < ApiController
+        skip_before_action :authenticate!
+        skip_before_action :require_tenant!
 
       # POST /api/v1/auth/login
       def authenticate
