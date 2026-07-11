@@ -6,11 +6,12 @@ Hands-on walkthrough of all critical paths (API testing, frontend UI, live inter
 
 ## Executive Summary
 
-The platform is an AI-powered interview system with **three critical gaps** that block any client release:
+The platform is an AI-powered interview system with **one critical gap** that blocks any client release:
 
 1. ~~**Wrong invite URL**~~ — ✅ Fixed. Candidates can now join interviews.
-2. **Portfolio generation fails** — The Gemini API is rate-limited, and the system has no graceful degradation. Portfolios fail silently, and the endpoint returns HTTP 200 (success) instead of an error status. This is a P1 blocker.
+2. **Portfolio generation fails** — The Gemini API is rate-limited, and the system has no graceful degradation. Portfolios fail silently, but the endpoint now correctly returns HTTP 503 (Service Unavailable) instead of 200, and the frontend shows a failed state with retry button.
 3. ~~**No quality infrastructure**~~ — ✅ Fixed. Quality infrastructure is now in place.
+4. ~~**No 404 page handling**~~ — ✅ Fixed. Backend returns JSON 404 for undefined routes. Frontend shows NotFoundPage for undefined routes and missing resources.
 
 **Ship/Do-not-ship line:** This version should **not ship** to a client. The portfolio generation issue is an external dependency that cannot be fixed in code, but the quality infrastructure is now in place to catch future defects.
 
@@ -30,7 +31,7 @@ The platform is an AI-powered interview system with **three critical gaps** that
 ```
 The URL points to port 3001 (the API), but the interview page lives in the web app (port 5173). The API does not serve the interview page. Opening this URL in a browser shows a Rails routing error page, which exposes backend stack traces.  
 **Repro:** Create a session via `POST /api/v1/assessments/:id/sessions`, then open the returned `invite_url` in a browser.  
-**Status:** ✅ Fixed — Added FRONTEND_URL env var, updated Session#invite_url
+**Status:** ✅ Fixed — Added FRONTEND_URL env var, updated Session#invite_url. Backend now returns JSON 404 for any undefined route (including `/interview/:token`) instead of Rails routing error page. See [PR #8](https://github.com/up2dul/quality-engineering/pull/8)
 
 ---
 
@@ -68,6 +69,8 @@ The URL points to port 3001 (the API), but the interview page lives in the web a
 **Repro:** Complete an interview, wait for portfolio generation to fail due to rate limiting, then call the portfolio endpoint.  
 **Status:** ✅ Fixed — Portfolio endpoint now returns 503 for failed generation, 202 for pending/generating, 200 for complete. See [PR #5](https://github.com/up2dul/quality-engineering/pull/5)
 
+#### 5. Wrong HTTP status codes for authentication errors
+
 **Impact:** Clients cannot distinguish between "not authenticated" and "forbidden." This breaks standard HTTP error handling — clients that retry on 403 but not on 401 will behave incorrectly.  
 **Type:** Built wrong  
 **Evidence:**
@@ -89,7 +92,7 @@ The URL points to port 3001 (the API), but the interview page lives in the web a
 **Type:** Missing spec  
 **Evidence:** Navigating to a non-existent assessment (e.g., `/assessments/999`) or any invalid route shows a generic routing error page instead of a user-friendly 404 page.  
 **Repro:** Navigate to `http://localhost:5173/assessments/999` or any invalid route.  
-**Status:** Remaining
+**Status:** ✅ Fixed — Backend returns JSON 404 for all undefined routes. Frontend shows NotFoundPage for undefined routes and missing resources. See [PR #8](https://github.com/up2dul/quality-engineering/pull/8)
 
 ---
 
@@ -129,11 +132,11 @@ The URL points to port 3001 (the API), but the interview page lives in the web a
 
 ### Pattern 1: Happy path only — no error handling
 
-**Observation:** The system was built for the happy path. The core flow works (create assessment → create session → conduct interview), but error paths are missing:
-- No error messages displayed to users
-- No 404 pages
-- Wrong HTTP status codes for auth errors
-- Portfolio endpoint returns 200 on failure
+**Observation:** The system was built for the happy path. The core flow works (create assessment → create session → conduct interview), but error paths were missing:
+- ~~No error messages displayed to users~~ — Partially addressed (portfolio failed state shows error)
+- ~~No 404 pages~~ — ✅ Fixed (backend returns JSON 404, frontend shows NotFoundPage)
+- ~~Wrong HTTP status codes for auth errors~~ — ✅ Fixed (401 for auth errors, 403 for permission errors)
+- ~~Portfolio endpoint returns 200 on failure~~ — ✅ Fixed (returns 503 for failed generation)
 
 **Root cause:** The developers built the success path and stopped. There is no culture of "what if this fails?" or "what does the user see when things go wrong?"
 
@@ -174,11 +177,13 @@ The URL points to port 3001 (the API), but the interview page lives in the web a
 **What must be fixed before shipping:**
 1. ~~Fix invite URL to point to frontend (P1 #1)~~ ✅ Fixed
 2. ~~Add user seeding to db/seeds.rb (P1 #3)~~ ✅ Fixed
-3. ~~Implement graceful degradation for portfolio generation (P1 #2)~~ ⚠️ External dependency - cannot be fixed in code
+3. ~~Implement graceful degradation for portfolio generation (P1 #2)~~ ⚠️ External dependency - cannot be fixed in code, but now returns 503 and frontend shows failed state with retry button
 4. ~~Add tenant isolation tests for every controller~~ ✅ Fixed
 5. ~~Add authorization tests for every role-based endpoint~~ ✅ Fixed
 6. ~~Implement workflow gate (PR template + CI check)~~ ✅ Fixed
 7. ~~Implement CI pipeline (run tests on every PR)~~ ✅ Fixed
+8. ~~Fix HTTP status codes for authentication errors (P2 #5)~~ ✅ Fixed
+9. ~~Implement 404 page handling (P2 #6)~~ ✅ Fixed
 
 **Estimated effort:** 2-3 days for a senior engineer familiar with the codebase.
 
